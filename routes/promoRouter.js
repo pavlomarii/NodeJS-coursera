@@ -1,11 +1,11 @@
 // Modules needed
 const express = require('express');
+const promoRouter = express.Router();
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+const authenticate = require('../authenticate');
 const Promotions = require('../models/promotions')
 
-// PromoRouter & JSON-parsing
-const promoRouter = express.Router();
+// JSON-parsings
 promoRouter.use(bodyParser.json());
 
 // Route for '/'
@@ -19,7 +19,7 @@ promoRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
     Promotions.create(req.body)
     .then((promotion) => {
         res.statusCode = 200;
@@ -28,11 +28,11 @@ promoRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.put((req, res, next) => {
+.put(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /promos');
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     Promotions.remove({})
     .then((resp) => {
         res.statusCode = 200;
@@ -53,11 +53,11 @@ promoRouter.route('/:promoId')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;
     res.end('POST operation not supported on /promos/'+ req.params.promoId);
 })
-.put((req, res, next) => {
+.put(authenticate.verifyUser, (req, res, next) => {
     Promotions.findByIdAndUpdate(req.params.promoId, {$set: req.body}, {new: true})
     .then((promotion) => {
         res.statusCode = 200;
@@ -66,7 +66,7 @@ promoRouter.route('/:promoId')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser, (req, res, next) => {
     Promotions.findByIdAndRemove(req.params.promoId)
     .then((resp) => {
         res.statusCode = 200;
@@ -76,5 +76,5 @@ promoRouter.route('/:promoId')
     .catch((err) => next(err));
 });
 
-// Export this module
+// Export this router to app.js
 module.exports = promoRouter;
