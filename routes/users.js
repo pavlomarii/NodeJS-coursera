@@ -4,13 +4,14 @@ const router = express.Router();
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 const User = require('../models/user');
 
 // JSON-parsing
 router.use(bodyParser.json());
 
 // GET users listing
-router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     User.find({})
     .then((users) => {
         res.statusCode = 200;
@@ -21,7 +22,7 @@ router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, ne
 });
 
 // Route for register new users
-router.post('/signup', (req, res, next) => {
+router.post('/signup', cors.corsWithOptions, (req, res, next) => {
 
     // Register user
     User.register(new User({username: req.body.username}), req.body.password, (err, user) => {
@@ -58,7 +59,7 @@ router.post('/signup', (req, res, next) => {
 });
 
 // Route for login users using local passport
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
 
     // Creating token for user
     var token = authenticate.getToken({_id: req.user._id});
@@ -70,7 +71,7 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
 });
 
 // Route for logout users
-router.get('/logout', (req, res, next) => {
+router.get('/logout', cors.corsWithOptions, (req, res, next) => {
 
     // Clear all info about session, logout and redirect to main route
     if(req.session){
