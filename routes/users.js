@@ -13,46 +13,56 @@ router.use(bodyParser.json());
 // GET users listing
 router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     User.find({})
-    .then((users) => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(users);
-    }, (err) => next(err))
-    .catch((err) => next(err));
+        .then((users) => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(users);
+        }, (err) => next(err))
+        .catch((err) => next(err));
 });
 
 // Route for register new users
 router.post('/signup', cors.corsWithOptions, (req, res, next) => {
 
     // Register user
-    User.register(new User({username: req.body.username}), req.body.password, (err, user) => {
+    User.register(new User({
+        username: req.body.username
+    }), req.body.password, (err, user) => {
 
         // Error handler
-        if(err) {
+        if (err) {
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
-            res.json({err: err});
+            res.json({
+                err: err
+            });
         }
 
         // Successful registration
         else {
-            if(req.body.firstname){
+            if (req.body.firstname) {
                 user.firstname = req.body.firstname;
             }
-            if(req.body.lastname){
+            if (req.body.lastname) {
                 user.lastname = req.body.lastname;
             }
             user.save((err, user) => {
-                if(err) {
+                if (err) {
                     res.statusCode = 500;
                     res.setHeader('Content-Type', 'application/json');
-                    res.json({err: err});
+                    res.json({
+                        err: err
+                    });
                     return;
                 }
                 passport.authenticate('local')(req, res, () => {
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
-                    res.json({success: true, status: 'Registration Successful!'})});
+                    res.json({
+                        success: true,
+                        status: 'Registration Successful!'
+                    })
+                });
             });
         }
     });
@@ -62,19 +72,25 @@ router.post('/signup', cors.corsWithOptions, (req, res, next) => {
 router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
 
     // Creating token for user
-    var token = authenticate.getToken({_id: req.user._id});
+    var token = authenticate.getToken({
+        _id: req.user._id
+    });
 
     // Response with the token
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
-    res.json({success: true, token: token, status: 'You are successfully logged in!'});
+    res.json({
+        success: true,
+        token: token,
+        status: 'You are successfully logged in!'
+    });
 });
 
 // Route for logout users
 router.get('/logout', cors.corsWithOptions, (req, res, next) => {
 
     // Clear all info about session, logout and redirect to main route
-    if(req.session){
+    if (req.session) {
         req.session.destroy();
         res.clearCookie('session-id');
         res.redirect('/');
@@ -89,11 +105,17 @@ router.get('/logout', cors.corsWithOptions, (req, res, next) => {
 });
 
 router.get('/facebook/token', passport.authenticate('facebook-token'), (req, res) => {
-    if(req.user){
-        var token = authenticate.getToken({_id: req.user._id});
+    if (req.user) {
+        var token = authenticate.getToken({
+            _id: req.user._id
+        });
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json({success: true, token: token, status: 'You are successfully logged in!'});
+        res.json({
+            success: true,
+            token: token,
+            status: 'You are successfully logged in!'
+        });
     }
 });
 
